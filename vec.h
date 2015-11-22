@@ -1,10 +1,10 @@
 #ifndef __VECTOR_HEADER__
 #define __VECTOR_HEADER__
 
-// Stupid FLTK includes iostream.h, so I can't include the official 
+// Stupid FLTK includes iostream.h, so I can't include the official
 // STL version of iostream.  Damn it all to bloody hell!  -- ehsu
 
-#if _MSC_VER >= 1300
+#if _MSC_VER >= 1300 || __GNUC__
 
 #include <iostream>
 using namespace std;
@@ -17,8 +17,10 @@ using namespace std;
 
 #include <cmath>
 
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4244)
+#endif
 
 //==========[ Forward References ]=========================
 
@@ -71,7 +73,7 @@ public:
 
 	T& operator []( int i )
 		{ return n[i]; }
-	T operator []( int i ) const 
+	T operator []( int i ) const
 		{ return n[i]; }
 
 	//---[ Arithmetic Operators ]----------------
@@ -99,7 +101,7 @@ public:
 
 	//---[ Friend Methods ]----------------------
 
-#if _MSC_VER >= 1300
+#if _MSC_VER >= 1300 || __GNUC__
 
 	template <class U> friend U operator *( const Vec<U>& a, const Vec<U>& b );
 	template <class U> friend Vec<U> operator -( const Vec<U>& v );
@@ -175,7 +177,7 @@ public:
 
 	T& operator []( int i )
 		{ return n[i]; }
-	T operator []( int i ) const 
+	T operator []( int i ) const
 		{ return n[i]; }
 
 	//---[ Arithmetic Operators ]----------------
@@ -196,7 +198,7 @@ public:
 
 	//---[ Normalization ]-----------------------
 
-	void normalize() { 
+	void normalize() {
 		double len = length();
 		n[0] /= len; n[1] /= len; n[2] /= len;
 	}
@@ -208,7 +210,7 @@ public:
 
 	//---[ Friend Methods ]----------------------
 
-#if _MSC_VER >= 1300
+#if _MSC_VER >= 1300 || __GNUC__
 
 	template<class U> friend U operator *( const Vec3<U>& a, const Vec4<U>& b );
 	template<class U> friend U operator *( const Vec4<U>& b, const Vec3<U>& a );
@@ -270,7 +272,7 @@ class Vec4 {
 	T		n[4];
 
 public:
-	
+
 	//---[ Constructors ]------------------------
 
 	Vec4() { n[0] = 0.0; n[1] = 0.0; n[2] = 0.0; n[3] = 0.0; }
@@ -299,7 +301,7 @@ public:
 
 	T& operator []( int i )
 		{ return n[i]; }
-	T operator []( int i ) const 
+	T operator []( int i ) const
 		{ return n[i]; }
 
 	//---[ Arithmetic Operators ]----------------
@@ -325,10 +327,10 @@ public:
 		double len = length();
 		n[0] /= len; n[1] /= len; n[2] /= len; n[3] /= len;
 	}
-	
+
 	//---[ Friend Methods ]----------------------
 
-#if _MSC_VER >= 1300
+#if _MSC_VER >= 1300 || __GNUC__
 
 	template<class U> friend U operator *( const Vec3<U>& a, const Vec4<U>& b );
 	template<class U> friend U operator *( const Vec4<U>& b, const Vec3<U>& a );
@@ -557,7 +559,7 @@ Vec<T> operator-( const Vec<T>& v ) {
 	Vec<T>	result( v.numElements, false );
 
 	for( int i=0;i<v.numElements;i++ )
-		result.n[i] = -n[i];
+		result.n[i] = -v.n[i];
 
 	return result;
 }
@@ -599,7 +601,7 @@ Vec<T> operator^( const Vec<T>& a, const Vec<T>& b ) {
 		throw VectorSizeMismatch();
 #endif
 
-	return *this;
+	return a;
 }
 
 template <class T>
@@ -822,15 +824,15 @@ inline T operator *(const Vec4<T>& a, const Vec4<T>& b) {
 
 template <class T>
 inline Vec4<T> operator *(const Mat4<T>& a, const Vec4<T>& v) {
-	return Vec3<T>( a.n[0]*v.n[0]+a.n[1]*v.n[1]+a.n[2]*v.n[2]+a.n[3]*v.n[3],
+	return Vec4<T>( a.n[0]*v.n[0]+a.n[1]*v.n[1]+a.n[2]*v.n[2]+a.n[3]*v.n[3],
 					a.n[4]*v.n[0]+a.n[5]*v.n[1]+a.n[6]*v.n[2]+a.n[7]*v.n[3],
 					a.n[8]*v.n[0]+a.n[9]*v.n[1]+a.n[10]*v.n[2]+a.n[11]*v.n[3],
-					a.n[12]*v.n[0]+a.n[13]*v.n[1]+a.n[14]*v.n[2]+a.n[15]*v.n[3],);
+					a.n[12]*v.n[0]+a.n[13]*v.n[1]+a.n[14]*v.n[2]+a.n[15]*v.n[3]);
 }
 
 template <class T>
-inline Vec4<T> operator *( const Vec4<T>& v, Mat4<T>& a ){
-	return a.transpose() * v;
+inline Vec4<T> operator *( const Vec4<T>& v, const Mat4<T>& a ){
+	return Mat4<T>(a).transpose() * v;
 }
 
 template <class T>
@@ -840,7 +842,7 @@ inline Vec4<T> operator /(const Vec4<T>& a, const double d) {
 
 template <class T>
 inline bool operator ==(const Vec4<T>& a, const Vec4<T>& b) {
-	return a.n[0] == b.n[0] && a.n[1] == b.n[1] && a.n[2] == b.n[2] 
+	return a.n[0] == b.n[0] && a.n[1] == b.n[1] && a.n[2] == b.n[2]
 	    && a.n[3] == b.n[3];
 }
 
@@ -883,6 +885,8 @@ inline Vec4<T> prod(const Vec4<T>& a, const Vec4<T>& b ) {
 	return Vec4<T>( a.n[0]*b.n[0], a.n[1]*b.n[1], a.n[2]*b.n[2], a.n[3]*b.n[3] );
 }
 
+#ifdef _MSC_VER
 #pragma warning(pop)
+#endif
 
 #endif

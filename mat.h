@@ -1,6 +1,9 @@
 #ifndef __MATRIX_HEADER__
 #define __MATRIX_HEADER__
 
+#include <cstring>
+#include <cmath>
+
 //==========[ Forward References ]=============================================
 
 template <class T> class Vec;
@@ -20,7 +23,7 @@ class Mat3 {
 	T		n[9];
 
 public:
-	
+
 	//---[ Constructors ]----------------------------------
 
 	Mat3()
@@ -54,9 +57,9 @@ public:
 
 	//---[ Ordering Methods ]------------------------------
 
-	Mat3<T> transpose() const { return Mat3<T>(n[0],n[3],n[6],n[1],n[4],n[7],n[2],n[5],n[8]) }
+	Mat3<T> transpose() const { return Mat3<T>(n[0],n[3],n[6],n[1],n[4],n[7],n[2],n[5],n[8]); }
 	double trace() const { return n[0]+n[4]+n[8]; }
-	
+
 	//---[ GL Matrix ]-------------------------------------
 
 	void getGLMatrix( T* mat ) const
@@ -73,7 +76,7 @@ public:
 
 	//---[ Friend Methods ]--------------------------------
 
-#if _MSC_VER >= 1300
+#if _MSC_VER >= 1300 || __GNUC__
 
         template <class U> friend Mat3<U> operator -( const Mat3<U>& a );
 	template <class U> friend Mat3<U> operator +( const Mat3<U>& a, const Mat3<U>& b );
@@ -117,7 +120,7 @@ class Mat4 {
 public:
 
 	bool isZero() { return n[0]==0&&n[1]==0&&n[2]==0&&n[3]==0&&n[4]==0&&n[5]==0&&n[6]==0&&n[7]==0&&n[8]==0&&n[9]==0&&n[10]==0&&n[11]==0&&n[12]==0&&n[13]==0&&n[14]==0&&n[15]==0; }
-	
+
 	//---[ Constructors ]----------------------------------
 
 	Mat4()
@@ -126,7 +129,7 @@ public:
 		{ n[ 0]=n0 ; n[ 1]=n1 ; n[ 2]=n2 ; n[ 3]=n3 ;
 		  n[ 4]=n4 ; n[ 5]=n5 ; n[ 6]=n6 ; n[ 7]=n7 ;
 		  n[ 8]=n8 ; n[ 9]=n9 ; n[10]=n10; n[11]=n11;
-		  n[12]=n12; n[13]=n13; n[14]=n14; n[15]=n15; }	  
+		  n[12]=n12; n[13]=n13; n[14]=n14; n[15]=n15; }
 	Mat4( const Mat4<T>& m )
 		{ memcpy(n,m.n,16*sizeof(T)); }
 
@@ -138,25 +141,25 @@ public:
 		{ n[ 0]+=m.n[ 0]; n[ 1]+=m.n[ 1]; n[ 2]+=m.n[ 2]; n[ 3]+=m.n[ 3];
 		  n[ 4]+=m.n[ 4]; n[ 5]+=m.n[ 5]; n[ 6]+=m.n[ 6]; n[ 7]+=m.n[ 7];
 		  n[ 8]+=m.n[ 8]; n[ 9]+=m.n[ 9]; n[10]+=m.n[10]; n[11]+=m.n[11];
-		  n[12]+=m.n[12]; n[13]+=m.n[13]; n[14]+=m.n[14]; n[15]+=m.n[15]; 
+		  n[12]+=m.n[12]; n[13]+=m.n[13]; n[14]+=m.n[14]; n[15]+=m.n[15];
 		  return *this; }
 	Mat4<T>& operator -=( const Mat4<T>& m )
 		{ n[ 0]-=m.n[ 0]; n[ 1]-=m.n[ 1]; n[ 2]-=m.n[ 2]; n[ 3]-=m.n[ 3];
 		  n[ 4]-=m.n[ 4]; n[ 5]-=m.n[ 5]; n[ 6]-=m.n[ 6]; n[ 7]-=m.n[ 7];
 		  n[ 8]-=m.n[ 8]; n[ 9]-=m.n[ 9]; n[10]-=m.n[10]; n[11]-=m.n[11];
-		  n[12]-=m.n[12]; n[13]-=m.n[13]; n[14]-=m.n[14]; n[15]-=m.n[15]; 
+		  n[12]-=m.n[12]; n[13]-=m.n[13]; n[14]-=m.n[14]; n[15]-=m.n[15];
 		  return *this; }
 	Mat4<T>& operator *=( const T d )
 		{ n[ 0]*=d; n[ 1]*=d; n[ 2]*=d; n[ 3]*=d;
 		  n[ 4]*=d; n[ 5]*=d; n[ 6]*=d; n[ 7]*=d;
 		  n[ 8]*=d; n[ 9]*=d; n[10]*=d; n[11]*=d;
-		  n[12]*=d; n[13]*=d; n[14]*=d; n[15]*=d; 
+		  n[12]*=d; n[13]*=d; n[14]*=d; n[15]*=d;
 		  return *this; }
 	Mat4<T>& operator /=( const T d )
 		{ n[ 0]/=d; n[ 1]/=d; n[ 2]/=d; n[ 3]/=d;
 		  n[ 4]/=d; n[ 5]/=d; n[ 6]/=d; n[ 7]/=d;
 		  n[ 8]/=d; n[ 9]/=d; n[10]/=d; n[11]/=d;
-		  n[12]/=d; n[13]/=d; n[14]/=d; n[15]/=d; 
+		  n[12]/=d; n[13]/=d; n[14]/=d; n[15]/=d;
 		  return *this; }
 
 	//---[ Access Operators ]------------------------------
@@ -225,7 +228,7 @@ public:
 			n[b*4+i] = temp;
 		}
 	}
-	
+
 	//---[ GL Matrix ]-------------------------------------
 
 	void getGLMatrix( T* mat ) const
@@ -240,10 +243,10 @@ public:
 	static Mat4<T> createTranslation( T x, T y, T z );
 	static Mat4<T> createScale( T sx, T sy, T sz );
 	static Mat4<T> createShear( T shx, T shy, T shz );
-	
+
 	//---[ Friend Methods ]--------------------------------
 
-#if _MSC_VER >= 1300
+#if _MSC_VER >= 1300 || __GNUC__
 
 	template <class U> friend Mat4<U> operator -( const Mat4<U>& a );
 	template <class U> friend Mat4<U> operator +( const Mat4<U>& a, const Mat4<U>& b );
@@ -253,6 +256,8 @@ public:
 	template <class U> friend Mat4<U> operator *( const double d, const Mat4<U>& a );
 	template <class U> friend Vec3<U> operator *( const Mat4<U>& a, const Vec3<U>& b );
 	template <class U> friend Mat4<U> operator /( const Mat4<U>& a, const double d );
+	template <class U> friend Vec4<U> operator *( const Mat4<U>& a, const Vec4<U>& v );
+	template <class U> friend Vec4<U> operator *( const Vec4<U>& v, const Mat4<U>& a );
 	template <class U> friend bool operator ==( const Mat4<U>& a, const Mat4<U>& b );
 	template <class U> friend bool operator !=( const Mat4<U>& a, const Mat4<U>& b );
 
@@ -318,14 +323,14 @@ template <class T>
 inline Mat3<T> operator +( const Mat3<T>& a, const Mat3<T>& b ) {
 	return Mat3<T>( a.n[0]+b.n[0], a.n[1]+b.n[1], a.n[2]+b.n[2],
 					a.n[3]+b.n[3], a.n[4]+b.n[4], a.n[5]+b.n[5],
-					a.n[6]+b.n[6], a.n[7]+b.n[7], a.n[8]+b.n[8],);
+					a.n[6]+b.n[6], a.n[7]+b.n[7], a.n[8]+b.n[8]);
 }
 
 template <class T>
 inline Mat3<T> operator -( const Mat3<T>& a, const Mat3<T>& b) {
 	return Mat3<T>( a.n[0]-b.n[0], a.n[1]-b.n[1], a.n[2]-b.n[2],
 					a.n[3]-b.n[3], a.n[4]-b.n[4], a.n[5]-b.n[5],
-					a.n[6]-b.n[6], a.n[7]-b.n[7], a.n[8]-b.n[8],);
+					a.n[6]-b.n[6], a.n[7]-b.n[7], a.n[8]-b.n[8]);
 }
 
 template <class T>
@@ -403,7 +408,7 @@ inline Mat4<T> Mat4<T>::createScale( T sx, T sy, T sz ) {
 template <class T>
 inline Mat4<T> Mat4<T>::createShear( T shx, T shy, T shz ) {
 	Mat4<T> shear;
-	
+
 	return shear;
 }
 

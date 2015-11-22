@@ -7,7 +7,6 @@ void LinearCurveEvaluator::evaluateCurve(const std::vector<Point>& ptvCtrlPts,
 										 const bool& bWrap) const
 {
 	int iCtrlPtCount = ptvCtrlPts.size();
-
 	ptvEvaluatedCurvePts.assign(ptvCtrlPts.begin(), ptvCtrlPts.end());
 
 	float x = 0.0;
@@ -19,8 +18,7 @@ void LinearCurveEvaluator::evaluateCurve(const std::vector<Point>& ptvCtrlPts,
 		// wraparound are equal.
 
 		if ((ptvCtrlPts[0].x + fAniLength) - ptvCtrlPts[iCtrlPtCount - 1].x > 0.0f) {
-			y1 = (ptvCtrlPts[0].y * (fAniLength - ptvCtrlPts[iCtrlPtCount - 1].x) + 
-				  ptvCtrlPts[iCtrlPtCount - 1].y * ptvCtrlPts[0].x) /
+			y1 = (ptvCtrlPts[0].y * (fAniLength - ptvCtrlPts[iCtrlPtCount - 1].x) + ptvCtrlPts[iCtrlPtCount - 1].y * ptvCtrlPts[0].x) /
 				 (ptvCtrlPts[0].x + fAniLength - ptvCtrlPts[iCtrlPtCount - 1].x);
 		}
 		else 
