@@ -84,7 +84,7 @@ void BezierCurveEvaluator::pushPoints(std::vector<Point>& ptvEvaluatedCurvePts, 
 	for (int j = 0; j < 50; j++) { // draw 50 points
 		double t = j / 50.0;
 		Vec4d T(1, t, t * t, t * t * t);
-		Point ptOnCurve(T * M * Px, T * M * Py);
+		Point ptOnCurve(T * M * Px, T * M * Py); // M transpose times T!!!
 
 		if (ptOnCurve.x > fAniLength) // point out of screen
 			ptOnCurve.x = ptOnCurve.x - fAniLength;
