@@ -14,6 +14,7 @@ public:
 		std::vector<Point>& ptvEvaluatedCurvePts,
 		const float& fAniLength,
 		const bool& bWrap) const;
+	void pushPoints(std::vector<Point>& ptvEvaluatedCurvePts, std::vector<Point>& pts, const float& fAniLength) const;
 };
 
 #endif
