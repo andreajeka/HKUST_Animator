@@ -2,6 +2,31 @@
 #include <FL/gl.h>
 #include <GL/glu.h>
 #include <cstdio>
+#include <math.h>
+
+// For texture mapping
+#define checkImageWidth 64
+#define checkImageHeight 64
+#define PI 3.14159265
+static GLubyte checkImage[checkImageHeight][checkImageWidth][4];
+//static GLubyte otherImage[checkImageHeight][checkImageWidth][4];
+
+static GLuint texName;
+
+void makeCheckImages(void)
+{
+	int i, j, c;
+
+	for (i = 0; i < checkImageHeight; i++) {
+		for (j = 0; j < checkImageWidth; j++) {
+			c = ((((i & 0x8) == 0) ^ ((j & 0x8)) == 0)) * 128;
+			checkImage[i][j][0] = (GLubyte)c;
+			checkImage[i][j][1] = (GLubyte)c;
+			checkImage[i][j][2] = (GLubyte)c;
+			checkImage[i][j][3] = (GLubyte)128;
+		}
+	}
+}
 
 // ********************************************************
 // Support functions from previous version of modeler
@@ -231,6 +256,31 @@ void drawSphere(double r)
     }
 }
 
+void drawTextureSphere(double r)
+{
+	glEnable(GL_DEPTH_TEST);
+	makeCheckImages();
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	glGenTextures(1, &texName);
+	glBindTexture(GL_TEXTURE_2D, texName);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+		GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+		GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, checkImageWidth,
+		checkImageHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+		checkImage);
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+	glBindTexture(GL_TEXTURE_2D, texName);
+
+	drawSphere(r);
+	glDisable(GL_TEXTURE_2D);
+}
 
 void drawBox( double x, double y, double z )
 {
@@ -294,7 +344,79 @@ void drawBox( double x, double y, double z )
 
 void drawTextureBox( double x, double y, double z )
 {
-    // NOT IMPLEMENTED, SORRY (ehsu)
+	glEnable(GL_DEPTH_TEST);
+	makeCheckImages();
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	glGenTextures(1, &texName);
+	glBindTexture(GL_TEXTURE_2D, texName);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+		GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+		GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, checkImageWidth,
+		checkImageHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+		checkImage);
+
+	int savemode;
+	glGetIntegerv(GL_MATRIX_MODE, &savemode);
+
+	/* switch to the model matrix and scale by x,y,z. */
+	glMatrixMode(GL_MODELVIEW);
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+	glBindTexture(GL_TEXTURE_2D, texName);
+	glPushMatrix();
+	glScaled(x, y, z);
+
+	glBegin(GL_QUADS);
+
+	glNormal3d(0.0, 0.0, -1.0);
+	glTexCoord2f(0.0, 0.0); glVertex3d(0.0, 0.0, 0.0);
+	glTexCoord2f(0.0, 1.0); glVertex3d(0.0, 1.0, 0.0);
+	glTexCoord2f(1.0, 1.0); glVertex3d(1.0, 1.0, 0.0);
+	glTexCoord2f(1.0, 0.0); glVertex3d(1.0, 0.0, 0.0);
+
+	glNormal3d(0.0, -1.0, 0.0);
+	glTexCoord2f(0.0, 0.0); glVertex3d(0.0, 0.0, 0.0);
+	glTexCoord2f(0.0, 1.0); glVertex3d(1.0, 0.0, 0.0);
+	glTexCoord2f(1.0, 1.0); glVertex3d(1.0, 0.0, 1.0);
+	glTexCoord2f(1.0, 0.0); glVertex3d(0.0, 0.0, 1.0);
+
+	glNormal3d(-1.0, 0.0, 0.0);
+	glTexCoord2f(0.0, 0.0); glVertex3d(0.0, 0.0, 0.0);
+	glTexCoord2f(0.0, 1.0); glVertex3d(0.0, 0.0, 1.0);
+	glTexCoord2f(1.0, 1.0); glVertex3d(0.0, 1.0, 1.0);
+	glTexCoord2f(1.0, 0.0); glVertex3d(0.0, 1.0, 0.0);
+
+	glNormal3d(0.0, 0.0, 1.0);
+	glTexCoord2f(0.0, 0.0); glVertex3d(0.0, 0.0, 1.0);
+	glTexCoord2f(0.0, 1.0); glVertex3d(1.0, 0.0, 1.0);
+	glTexCoord2f(1.0, 1.0); glVertex3d(1.0, 1.0, 1.0);
+	glTexCoord2f(1.0, 0.0); glVertex3d(0.0, 1.0, 1.0);
+
+	glNormal3d(0.0, 1.0, 0.0);
+	glTexCoord2f(0.0, 0.0); glVertex3d(0.0, 1.0, 0.0);
+	glTexCoord2f(0.0, 1.0); glVertex3d(0.0, 1.0, 1.0);
+	glTexCoord2f(1.0, 1.0); glVertex3d(1.0, 1.0, 1.0);
+	glTexCoord2f(1.0, 0.0); glVertex3d(1.0, 1.0, 0.0);
+
+	glNormal3d(1.0, 0.0, 0.0);
+	glTexCoord2f(0.0, 0.0); glVertex3d(1.0, 0.0, 0.0);
+	glTexCoord2f(0.0, 1.0); glVertex3d(1.0, 1.0, 0.0);
+	glTexCoord2f(1.0, 1.0); glVertex3d(1.0, 1.0, 1.0);
+	glTexCoord2f(1.0, 0.0); glVertex3d(1.0, 0.0, 1.0);
+
+	glEnd();
+
+	/* restore the model matrix stack, and switch back to the matrix
+	mode we were in. */
+	glPopMatrix();
+	glDisable(GL_TEXTURE_2D);
+	glMatrixMode(savemode);
 }
 
 void drawCylinder( double h, double r1, double r2 )
@@ -377,6 +499,33 @@ void drawCylinder( double h, double r1, double r2 )
     }
     
 }
+
+void drawTextureCylinder(double h, double r1, double r2)
+{
+	glEnable(GL_DEPTH_TEST);
+	makeCheckImages();
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	glGenTextures(1, &texName);
+	glBindTexture(GL_TEXTURE_2D, texName);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+		GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+		GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, checkImageWidth,
+		checkImageHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+		checkImage);
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+	glBindTexture(GL_TEXTURE_2D, texName);
+
+	drawCylinder(h, r1, r2);
+	glDisable(GL_TEXTURE_2D);
+}
+
 void drawTriangle( double x1, double y1, double z1,
                    double x2, double y2, double z2,
                    double x3, double y3, double z3 )
@@ -414,3 +563,77 @@ void drawTriangle( double x1, double y1, double z1,
         glEnd();
     }
 }
+
+void drawTorus(float R, float r)
+{
+	ModelerDrawState *mds = ModelerDrawState::Instance();
+
+	_setupOpenGl();
+
+	if (mds->m_rayFile)
+	{
+		_dump_current_modelview();
+		fprintf(mds->m_rayFile,
+			"what the fuck is this");
+		_dump_current_material();
+		fprintf(mds->m_rayFile, "})))\n");
+	}
+	else
+	{
+		/* remember which matrix mode OpenGL was in. */
+		int savemode;
+		glGetIntegerv(GL_MATRIX_MODE, &savemode);
+
+		int n;
+
+		switch (mds->m_quality)
+		{
+		case HIGH:
+			n = 32; break;
+		case MEDIUM:
+			n = 20; break;
+		case LOW:
+			n = 12; break;
+		case POOR:
+			n = 8; break;
+		}
+
+		int N = 2 * n;
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glPushAttrib(GL_CURRENT_BIT);
+
+		for (int j = 0; j < N; j++)
+		{
+			glRotated(360.0f / N, 0, 1, 0);
+			float next_Cos = cos(2 * PI * (0 + 1) / N);
+			float next_Sin = sin(2 * PI * (0 + 1) / N);
+
+			glBindTexture(GL_TEXTURE_2D, 1);
+			glBegin(GL_TRIANGLE_STRIP);
+
+			for (int i = 0; i < n + 1; i++)
+			{
+				float Sin = sin(2 * PI * i / n);
+				float Cos = cos(2 * PI * i / n);
+				glNormal3d(Cos, Sin, 0);
+				glTexCoord2f(0.0f, 1.0f * i / n);
+				glVertex3d(R + Cos * r, Sin * r, 0);
+
+				glNormal3d(Cos * next_Cos, Sin, Cos * next_Sin);
+				glTexCoord2f(1.0f, 1.0f * i / n);
+				glVertex3d(next_Cos * R + Cos * r * next_Cos, Sin * r, next_Sin * R + Cos * r * next_Sin);
+			}
+
+			glEnd();
+		}
+
+		/* restore the model matrix stack, and switch back to the matrix
+		mode we were in. */
+		glPopMatrix();
+		glPopAttrib();
+		glMatrixMode(savemode);
+	}
+}
+
+
