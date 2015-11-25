@@ -9,6 +9,7 @@
 
 #include "modelerglobals.h"
 #include "metaball.h"
+#include "particleSystem.h"
 
 #define PI 3.14159265
 
@@ -68,6 +69,9 @@ private:
 
 	void drawShell();
 
+	void spawnParticles(Mat4<float> cameraTransform);
+	Mat4<float> getModelViewMatrix();
+	Mat4f cameraMatrix;
 };
 
 SampleModel *SampleModel::instance = NULL;
@@ -79,6 +83,107 @@ ModelerView* createSampleModel(int x, int y, int w, int h, char *label)
 	return new SampleModel(x, y, w, h, label);
 }
 
+// getModelViewMatrix will return a copy of the
+// current OpenGL MODELVIEW matrix.
+Mat4<float> SampleModel::getModelViewMatrix() {
+	/**************************
+	**
+	**	GET THE OPENGL MODELVIEW MATRIX
+	**
+	**	Since OpenGL stores it's matricies in
+	**	column major order and our library
+	**	use row major order, we will need to
+	**	transpose what OpenGL gives us before returning.
+	**
+	**	Hint:  Use look up glGetFloatv or glGetDoublev
+	**	for how to get these values from OpenGL.
+	**
+	*******************************/
+	GLfloat m[16];
+	glGetFloatv(GL_MODELVIEW_MATRIX, m);
+	Mat4f matMV(m[0], m[1], m[2], m[3],
+		m[4], m[5], m[6], m[7],
+		m[8], m[9], m[10], m[11],
+		m[12], m[13], m[14], m[15]);
+	return matMV.transpose(); // because the matrix GL returns is column major
+							  // convert to row major
+}
+
+// The SpawnParticles function is responsible for generating new 
+// particles in your world.  You will call this function as you 
+// you traverse your model's hierarchy.  When you reach a point
+// in the hierarchy from where particles should be emitted, 
+// call this function!
+//
+// SpawnParticles takes the camera transformation matrix as a 
+// parameter.  More on this later.
+void SampleModel::spawnParticles(Mat4<float> cameraTransform) {
+	/****************************************************************
+	**
+	**	THIS FUNCTION WILL ADD A NEW PARTICLE TO OUR WORLD
+	**
+	**	Suppose we want particles to spawn from a the model's arm.
+	**	We need to find the location of the model's arm in world
+	**  coordinates so that we can set the initial position of new
+	**  particles.	As discussed on the Animator project page,
+	**  all particle positions should be in world coordinates.
+	**
+	**  At this point in execution, the MODELVIEW matrix contains the
+	**  camera transforms multiplied by some model transforms.  In other words,
+	**
+	**  MODELVIEW = CameraTransforms * ModelTransforms
+	**
+	**	We are interested only in ModelTransforms, which is the
+	**  transformation that will convert a point from the current, local
+	**  coordinate system to the world coordinate system.
+	**
+	**	To do this, we're going to "undo" the camera transforms from the
+	**  current MODELVIEW matrix.  The camera transform is passed in as
+	**  a parameter to this function (remember when we saved it
+	**  near the top of the model's draw method?).  We can "undo" the
+	**  camera transforms by pre-multiplying the current MODELVIEW matrix
+	**  with the inverse of the camera matrix.  In other words,
+	**
+	**  ModelTransforms = InverseCameraTransforms * MODELVIEW
+	**
+	********************************************************************/
+	
+	ParticleSystem *ps = ModelerApplication::Instance()->GetParticleSystem();
+	
+	//Get the current MODELVIEW matrix.
+	//	... "Undo" the camera transforms from the MODELVIEW matrix
+	//	... by multiplying Inverse(CameraTransforms) * CurrentModelViewMatrix.
+	//	... Store the result of this in a local variable called WorldMatrix.
+	//	...
+	Mat4f ModelT = getModelViewMatrix();
+	Mat4f WorldMatrix = cameraTransform.inverse() * ModelT;
+	
+	/*****************************************************************
+	**
+	**	At this point, we have the transformation that will convert a point
+	**  in the local coordinate system to a point in the world coordinate
+	**  system.
+	**
+	**  We need to find the actual point in world coordinates
+	**  where particle should be spawned.  This is simply
+	**  "the origin of the local coordinate system" transformed by
+	**  the WorldMatrix.
+	**
+	******************************************************************/
+	Vec4f Loc = WorldMatrix * Vec4f(0.0, 0.0, 0.0, 1.0);
+	
+	// !!!TODO: Set the actual point to spawn the particles.
+
+
+	/*****************************************************************
+	**
+	**	Now that we have the particle's initial position, we
+	**  can finally add it to our system!
+	**
+	***************************************************************/
+	ps->setParticleStart(Vec3f(Loc[0], Loc[1], Loc[2]), v);
+}
+
 // We are going to override (is that the right word?) the draw()
 // method of ModelerView to draw out SampleModel
 void SampleModel::draw()
@@ -87,6 +192,18 @@ void SampleModel::draw()
 	// matrix stuff.  Unless you want to fudge directly with the 
 	// projection matrix, don't bother with this ...
 	ModelerView::draw();
+
+	/*************************************************
+	**
+	**	NOW SAVE THE CURRENT MODELVIEW MATRIX
+	**
+	**	At this point in execution, the MODELVIEW matrix contains
+	**  ONLY the camera transformation.  We need to save this camera
+	**  transformation so that we can use it later (for reasons
+	**  explained below).
+	**
+	*****************************************************/
+	cameraMatrix = getModelViewMatrix();
 
 	// draw the sample model
 	setAmbientColor(.1f, .1f, .1f);
@@ -165,6 +282,35 @@ void SampleModel::draw()
 	}
 
 	glPopMatrix();
+
+	/***********************************************
+	**
+	**	NOW WE WILL ACTUALLY BEGIN DRAWING THE MODEL
+	**
+	**	Draw your model up to the node where you would like
+	**	particles to spawn from.
+	**
+	**  FYI:  As you call glRotate, glScale, or glTranslate,
+	**  OpenGL is multiplying new transformations into the
+	**  MODELVIEW matrix.
+	**
+	********************************************/
+	// If particle system exists, draw it
+	ParticleSystem *ps = ModelerApplication::Instance()->GetParticleSystem();
+	if (ps != NULL) {
+		ps->computeForcesAndUpdateParticles(t);
+		ps->drawParticles(t, m_camera);
+	}
+	
+	/*************************************************
+	**
+	**	NOW DO ANY CLOSING CODE
+	**
+	**	Don't forget that animator requires you to call
+	**  endDraw().
+	**	
+	**************************************************/
+	endDraw();
 }
 
 void SampleModel::drawEyeBandana() {
@@ -645,57 +791,6 @@ void SampleModel::drawTail() {
 	glPopMatrix();
 }
 
-void SampleModel::animationIterator() {
-	if (iterator == 60) {
-		iterator = 0;
-	}
-
-	if (iterator < 15) {
-		animHeadAngle = iterator;
-		animUpperLegAngle = -(iterator + 1) * 2;
-		animUpperArmAngle = animUpperLegAngle / 3.5;
-		if (iterator % 2 == 0)
-			animLowerLegAngle = (iterator + 1 - 1);
-		animLeftFootAngle = -iterator / 3;
-		animRightFootAngle = (60 - iterator) / 2 + 10;
-		++iterator;
-		return;
-	}
-	else if (iterator < 30) {
-		animHeadAngle = iterator;
-		animUpperLegAngle = -(30 - iterator) * 2;
-		animUpperArmAngle = animUpperLegAngle / 3.5;
-		if (iterator % 2 == 0)
-			animLowerLegAngle = (30 - iterator - 1);
-		animLeftFootAngle = -iterator/3 + 10;
-		animRightFootAngle = (45 - iterator) / 3 + 10;
-		++iterator;
-		return;
-	}
-	else if (iterator < 45) {
-		animHeadAngle = -iterator;
-		animUpperLegAngle = (iterator - 29) * 2;
-		animUpperArmAngle = animUpperLegAngle / 3.5;
-		if (iterator % 2 == 0)
-			animLowerLegAngle = -(iterator - 29 - 1);
-		animLeftFootAngle = iterator/3 + 10;
-		animRightFootAngle = (30 - iterator) / 3 + 10;
-		++iterator;
-		return;
-	}
-	else if (iterator < 60) {
-		animHeadAngle = -iterator;
-		animUpperLegAngle = (60 - iterator) * 2;
-		animUpperArmAngle = animUpperLegAngle / 3.5;
-		if (iterator % 2 == 0)
-			animLowerLegAngle = -(60 - iterator - 1);
-		animLeftFootAngle = iterator/2 + 10;
-		animRightFootAngle = (15 -iterator) / 3;
-		++iterator;
-		return;
-	}
-}
-
 void SampleModel::drawShell() {
 	// draw the front
 	setDiffuseColor(251.0 / 255, 193.0 / 255, 86.0 / 255);
@@ -864,5 +959,10 @@ int main()
 	controls[EYEBANDANA] = ModelerControl("Eye Bandana", 0, 1, 1, 0);
 
 	ModelerApplication::Instance()->Init(&createSampleModel, controls, NUMCONTROLS);
+
+	// Hooking up the particle system
+	ParticleSystem *ps = new ParticleSystem();
+	ModelerApplication::Instance()->SetParticleSystem(ps);
+
 	return ModelerApplication::Instance()->Run();
 }

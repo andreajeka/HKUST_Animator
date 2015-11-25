@@ -16,15 +16,17 @@
 #ifndef __PARTICLE_SYSTEM_H__
 #define __PARTICLE_SYSTEM_H__
 
+#include <FL/gl.h>
 #include "vec.h"
-
-
+#include "particle.h"
+#include "force.h"
+#include "camera.h"
+#include <vector>
+#include <map>
 
 class ParticleSystem {
 
 public:
-
-
 
 	/** Constructor **/
 	ParticleSystem();
@@ -36,7 +38,7 @@ public:
 	/** Simulation fxns **/
 	// This fxn should render all particles in the system,
 	// at current time t.
-	virtual void drawParticles(float t);
+	virtual void drawParticles(float t, Camera* camera);
 
 	// This fxn should save the configuration of all particles
 	// at current time t.
@@ -62,7 +64,9 @@ public:
 	// of baked particles (without leaking memory).
 	virtual void clearBaked();	
 
-
+	// This function load bake from data structure
+	// return true if found, false otherwise
+	virtual bool loadBaked(float t);
 
 	// These accessor fxns are implemented for you
 	float getBakeStartTime() { return bake_start_time; }
@@ -72,11 +76,30 @@ public:
 	bool isDirty() { return dirty; }
 	void setDirty(bool d) { dirty = d; }
 
-
+	void setFps(int fps) { bake_fps = fps; }
+	void setMatrix(GLfloat m[]) {
+		for (int i = 0; i<16; i++) { matrix[i] = m[i]; }
+	}
+	void setParticleStart(Vec3f pos, Vec3f vel) {
+		if (simulate) {
+			init_position = pos;
+			init_velocity = vel;
+		}
+	}
+	void addFieldForce(Force f) {
+		fieldForce.push_back(f);
+	}
 
 protected:
-	
-
+	GLfloat matrix[16];
+	int number;
+	float last_time;
+	std::vector<Particle> particles;
+	std::map<int, std::vector<Particle>> storeBake;
+	std::vector<Force> fieldForce;
+	int max_bake;
+	Vec3f init_position;
+	Vec3f init_velocity;
 
 	/** Some baking-related state **/
 	float bake_fps;						// frame rate at which simulation was baked
