@@ -181,7 +181,7 @@ void SampleModel::spawnParticles(Mat4<float> cameraTransform) {
 	**  can finally add it to our system!
 	**
 	***************************************************************/
-	ps->setParticleStart(Vec3f(Loc[0], Loc[1], Loc[2]), v);
+	//ps->setParticleStart(Vec3f(loc1, loc2, loc3), velocity);
 }
 
 // We are going to override (is that the right word?) the draw()

@@ -81,7 +81,7 @@ void ParticleSystem::computeForcesAndUpdateParticles(float t)
 
 
 /** Render particles */
-void ParticleSystem::drawParticles(float t)
+void ParticleSystem::drawParticles(float t, Camera* camera)
 {
 
 	// TODO
