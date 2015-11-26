@@ -155,8 +155,8 @@ void SampleModel::spawnParticles(Mat4<float> cameraTransform) {
 	//	... by multiplying Inverse(CameraTransforms) * CurrentModelViewMatrix.
 	//	... Store the result of this in a local variable called WorldMatrix.
 	//	...
-	Mat4f ModelT = getModelViewMatrix();
-	Mat4f WorldMatrix = cameraTransform.inverse() * ModelT;
+	Mat4f ModelMatrix = getModelViewMatrix();
+	Mat4f WorldMatrix = cameraTransform.inverse() * ModelMatrix;
 	
 	/*****************************************************************
 	**
@@ -172,8 +172,11 @@ void SampleModel::spawnParticles(Mat4<float> cameraTransform) {
 	******************************************************************/
 	Vec4f Loc = WorldMatrix * Vec4f(0.0, 0.0, 0.0, 1.0);
 	
-	// !!!TODO: Set the actual point to spawn the particles.
+	Vec4f VelL = WorldMatrix * Vec4f(0.0, 0.0, -0.5, 1.0);
+	Vec4f Vel = VelL - Loc;
+	Vec3f velocity(Vel[0], Vel[1], Vel[2]);
 
+	velocity.normalize();
 
 	/*****************************************************************
 	**
@@ -181,7 +184,7 @@ void SampleModel::spawnParticles(Mat4<float> cameraTransform) {
 	**  can finally add it to our system!
 	**
 	***************************************************************/
-	//ps->setParticleStart(Vec3f(loc1, loc2, loc3), velocity);
+	ps->setParticleStart(Vec3f(Loc[0], Loc[1], Loc[2]), velocity);
 }
 
 // We are going to override (is that the right word?) the draw()
@@ -208,6 +211,11 @@ void SampleModel::draw()
 	// draw the sample model
 	setAmbientColor(.1f, .1f, .1f);
 
+	glPushMatrix();
+	glTranslated(0.0, 6.0, 6.0);
+	spawnParticles(cameraMatrix);
+	glPopMatrix();
+
 	glPushMatrix(); // push identity
 	glTranslated(VAL(XPOS), VAL(YPOS), VAL(ZPOS)); // values set by the sliders
 
@@ -218,7 +226,6 @@ void SampleModel::draw()
 
 	if (animate)
 		glRotated(animHeadAngle, 0.0, 1.0, 0.0);
-
 	if (VAL(EYEBANDANA))
 		drawEyeBandana();
 
@@ -627,8 +634,6 @@ void SampleModel::drawRightFoot() {
 	if (VAL(TEXTURESKIN))
 		drawTextureCylinder(0.6, 0.25, 0.1);
 	else drawCylinder(0.6, 0.25, 0.1);
-
-	
 	glPopMatrix();
 }
 void SampleModel::drawLeftLegJoint() {
@@ -723,6 +728,7 @@ void SampleModel::drawLeftFoot() {
 	if (VAL(TEXTURESKIN))
 		drawTextureCylinder(0.6, 0.25, 0.1);
 	else drawCylinder(0.6, 0.25, 0.1);
+
 	glPopMatrix();
 }
 void SampleModel::drawTail() {
@@ -962,6 +968,7 @@ int main()
 
 	// Hooking up the particle system
 	ParticleSystem *ps = new ParticleSystem();
+	ps->addFieldForce(Force(0.0, -1.0, 0.0));
 	ModelerApplication::Instance()->SetParticleSystem(ps);
 
 	return ModelerApplication::Instance()->Run();

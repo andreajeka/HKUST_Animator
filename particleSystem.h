@@ -90,6 +90,8 @@ public:
 		fieldForce.push_back(f);
 	}
 
+	void rkProc(Particle& p, std::vector<Force>& f, float dt);
+
 protected:
 	GLfloat matrix[16];
 	int number;
