@@ -2,9 +2,13 @@
 #include "point.h"
 #include "vec.h"
 #include "mat.h"
+#include <algorithm>
 
 double cat = 0.5;
 const Mat4d M(1, 0, 0, 0, -3, 3, 0, 0, 3, -6, 3, 0, -1, 3, -3, 1);
+struct myclass {
+	bool operator() (Point pt1, Point pt2) { return (pt1.x < pt2.x); }
+} myobject;
 
 void CatmullRomCurveEvaluator::evaluateCurve(const std::vector<Point>& ptvCtrlPts,
 	std::vector<Point>& ptvEvaluatedCurvePts,
@@ -115,16 +119,17 @@ void CatmullRomCurveEvaluator::pushPoints(std::vector<Point>& ptvEvaluatedCurveP
 
 		if (fAniLength > 0.001f && ptOnCurve.x > fAniLength) // point out of screen
 			ptOnCurve.x = ptOnCurve.x - fAniLength;
-
-		if (ptOnCurve.x < pts[3].x && ptOnCurve.x > pts[0].x && ((ptOnCurve.x - pt0.x) > 0.01) && ((pt1.x - ptOnCurve.x) > 0.01))
-			ptvEvaluatedCurvePts.push_back(ptOnCurve);
+		
+		//if (ptOnCurve.x < pts[3].x && ptOnCurve.x > pts[0].x && ((ptOnCurve.x - pt0.x) > 0.01) && ((pt1.x - ptOnCurve.x) > 0.01))
+		ptvEvaluatedCurvePts.push_back(ptOnCurve);
+		std::sort(ptvEvaluatedCurvePts.begin(), ptvEvaluatedCurvePts.end(), myobject);
 	}
 }
 
 void CatmullRomCurveEvaluator::convertPoints(std::vector<Point>& pts, Point P0, Point P1, Point P2, Point P3) const {
 	Point V0(P1);
 	Point V1(Point(P1.x + cat / 3 * (P2.x - P0.x), P1.y + cat / 3 * (P2.y - P0.y)));
-	Point V2(Point(P2.x + cat / 3 * (P3.x - P1.x), P2.y + cat / 3 * (P3.y - P1.y)));
+	Point V2(Point(P2.x - cat / 3 * (P3.x - P1.x), P2.y - cat / 3 * (P3.y - P1.y)));
 	Point V3(P2);
 	pts.push_back(V0);
 	pts.push_back(V1);
