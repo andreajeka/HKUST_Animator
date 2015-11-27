@@ -3,6 +3,7 @@
 #include "bitmap.h"
 #include "modelerapp.h"
 #include "particleSystem.h"
+#include "tga.h"
 
 #include <FL/Fl.H>
 #include <FL/Fl_Gl_Window.h>
@@ -101,6 +102,24 @@ void ModelerView::draw()
 		glEnable( GL_LIGHT0 );
         glEnable( GL_LIGHT1 );
 		glEnable( GL_NORMALIZE );
+		glEnable(GL_TEXTURE_2D);
+		glEnable(GL_ALPHA_TEST);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+		//Support the use of TGA, test it on our model
+		int w, h;
+		unsigned char* tex = readTGA("particle.tga", w, h);
+
+		glGenTextures(1, &Particle::texID);
+		glBindTexture(GL_TEXTURE_2D, Particle::texID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
     }
 
   	glViewport( 0, 0, w(), h() );
