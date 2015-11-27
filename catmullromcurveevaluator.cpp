@@ -17,7 +17,8 @@ void CatmullRomCurveEvaluator::evaluateCurve(const std::vector<Point>& ptvCtrlPt
 
 	ptvEvaluatedCurvePts.clear();
 	int iCtrlPtCount = ptvCtrlPts.size();
-	if (iCtrlPtCount<3) return;
+	if (iCtrlPtCount < 3) return;
+	vector<Point> pts;
 
 	if (bWrap) {
 		// first
@@ -25,7 +26,6 @@ void CatmullRomCurveEvaluator::evaluateCurve(const std::vector<Point>& ptvCtrlPt
 		Point P1 = ptvCtrlPts[0];
 		Point P2 = ptvCtrlPts[1];
 		Point P3 = ptvCtrlPts[2];
-		vector<Point> pts;
 		convertPoints(pts, P0, P1, P2, P3);
 		pushPoints(ptvEvaluatedCurvePts, pts);
 
@@ -67,7 +67,6 @@ void CatmullRomCurveEvaluator::evaluateCurve(const std::vector<Point>& ptvCtrlPt
 		Point P1 = ptvCtrlPts[0];
 		Point P2 = ptvCtrlPts[1];
 		Point P3 = ptvCtrlPts[2];
-		vector<Point> pts;
 		convertPoints(pts, P0, P1, P2, P3);
 		pushPoints(ptvEvaluatedCurvePts, pts);
 
@@ -117,12 +116,15 @@ void CatmullRomCurveEvaluator::pushPoints(std::vector<Point>& ptvEvaluatedCurveP
 		Vec4d T1(1, t + 0.01, (t + 0.01) * (t + 0.01), (t + 0.01) * (t + 0.01) * (t + 0.01));
 		Point pt1(T1 * M * Px, T1 * M * Py);
 
-		if (fAniLength > 0.001f && ptOnCurve.x > fAniLength) // point out of screen
-			ptOnCurve.x = ptOnCurve.x - fAniLength;
-		
-		//if (ptOnCurve.x < pts[3].x && ptOnCurve.x > pts[0].x && ((ptOnCurve.x - pt0.x) > 0.01) && ((pt1.x - ptOnCurve.x) > 0.01))
-		ptvEvaluatedCurvePts.push_back(ptOnCurve);
-		std::sort(ptvEvaluatedCurvePts.begin(), ptvEvaluatedCurvePts.end(), myobject);
+		if (fAniLength > 0.001f) {
+			if (ptOnCurve.x > fAniLength) // point out of screen
+				ptOnCurve.x = ptOnCurve.x - fAniLength;
+			ptvEvaluatedCurvePts.push_back(ptOnCurve);
+		}
+		else {
+			if (ptOnCurve.x < pts[3].x && ptOnCurve.x > pts[0].x && ((ptOnCurve.x - pt0.x) > 0.01) && ((pt1.x - ptOnCurve.x) > 0.01))
+				ptvEvaluatedCurvePts.push_back(ptOnCurve);
+		}
 	}
 }
 
