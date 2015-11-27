@@ -90,7 +90,7 @@ public:
 		fieldForce.push_back(f);
 	}
 
-	void rkProc(Particle& p, std::vector<Force>& f, float dt);
+	void rungeKuttaMethod(Particle& p, std::vector<Force>& f, float dt);
 
 protected:
 	GLfloat matrix[16];

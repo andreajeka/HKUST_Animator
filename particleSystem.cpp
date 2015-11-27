@@ -128,7 +128,7 @@ void ParticleSystem::computeForcesAndUpdateParticles(float t)
 			force.push_back(*forceIterator);
 		}
 
-		rkProc(*iterator, force, dt);
+		rungeKuttaMethod(*iterator, force, dt);
 		iterator++;
 	}
 
@@ -158,10 +158,11 @@ void ParticleSystem::drawParticles(float t, Camera* camera)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 	std::sort(particles.begin(), particles.end(), SortCamera(camera));
-
-	std::vector<Particle>::iterator it;
-	for (it = particles.begin(); it != particles.end(); it++) {
-		it->draw(camera);
+	
+	// Part of bill boarding
+	std::vector<Particle>::iterator iterator;
+	for (iterator = particles.begin(); iterator != particles.end(); iterator++) {
+		iterator->draw(camera);
 	}
 
 	glDisable(GL_BLEND);
@@ -210,38 +211,39 @@ void ParticleSystem::clearBaked()
 	storeBake.clear();
 }
 
-void ParticleSystem::rkProc(Particle& p, std::vector<Force>& f, float dt) {
-	std::vector<Force>::iterator itf;
+/* Instead of using Euler's method, we use Runge-Kutta technique for more accurate results*/
+void ParticleSystem::rungeKuttaMethod(Particle& p, std::vector<Force>& force, float dt) {
+	std::vector<Force>::iterator forceIterator;
 
 	Vec3f x1 = p.position;
 	Vec3f v1 = p.velocity;
 	Vec3f a1(0.0, 0.0, 0.0);
-	for (itf = f.begin(); itf != f.end(); itf++) {
-		a1 += itf->getAcceleration(p);
+	for (forceIterator = force.begin(); forceIterator != force.end(); forceIterator++) {
+		a1 += forceIterator->getAcceleration(p);
 	}
 
 	Vec3f x2 = x1 + 0.5 * v1 * dt;
 	Vec3f v2 = v1 + 0.5 * a1 * dt;
 	Vec3f a2(0.0, 0.0, 0.0);
 	p.position = x2; p.velocity = v2;
-	for (itf = f.begin(); itf != f.end(); itf++) {
-		a2 += itf->getAcceleration(p);
+	for (forceIterator = force.begin(); forceIterator != force.end(); forceIterator++) {
+		a2 += forceIterator->getAcceleration(p);
 	}
 
 	Vec3f x3 = x2 + 0.5 * v2 * dt;
 	Vec3f v3 = v2 + 0.5 * a2 * dt;
 	Vec3f a3(0.0, 0.0, 0.0);
 	p.position = x3; p.velocity = v3;
-	for (itf = f.begin(); itf != f.end(); itf++) {
-		a3 += itf->getAcceleration(p);
+	for (forceIterator = force.begin(); forceIterator != force.end(); forceIterator++) {
+		a3 += forceIterator->getAcceleration(p);
 	}
 
 	Vec3f x4 = x3 + v3 * dt;
 	Vec3f v4 = v3 + a3 * dt;
 	Vec3f a4(0.0, 0.0, 0.0);
 	p.position = x4; p.velocity = v4;
-	for (itf = f.begin(); itf != f.end(); itf++) {
-		a4 += itf->getAcceleration(p);
+	for (forceIterator = force.begin(); forceIterator != force.end(); forceIterator++) {
+		a4 += forceIterator->getAcceleration(p);
 	}
 
 	Vec3f xf = x1 + (dt / 6)*(v1 + 2 * v2 + 2 * v3 + v4);
