@@ -142,7 +142,6 @@ void ParticleSystem::computeForcesAndUpdateParticles(float t)
 /** Render particles */
 void ParticleSystem::drawParticles(float t, Camera* camera)
 {
-	if (!simulate) return;
 
 	if (!loadBaked(t)) {
 		computeForcesAndUpdateParticles(t);

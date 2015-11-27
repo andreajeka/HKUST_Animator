@@ -211,10 +211,9 @@ void SampleModel::draw()
 	// draw the sample model
 	setAmbientColor(.1f, .1f, .1f);
 
-	glPushMatrix();
-	glTranslated(0.0, 6.0, 6.0);
-	spawnParticles(cameraMatrix);
-	glPopMatrix();
+	//glPushMatrix();
+
+	//glPopMatrix();
 
 	glPushMatrix(); // push identity
 	glTranslated(VAL(XPOS), VAL(YPOS), VAL(ZPOS)); // values set by the sliders
@@ -402,6 +401,7 @@ void SampleModel::drawLowerTorso() {
 	if (VAL(TEXTURESKIN))
 		drawTextureCylinder(LOWER_TORSO_HEIGHT, 0.9, 0.8);
 	else drawCylinder(LOWER_TORSO_HEIGHT, 0.9, 0.8);
+
 	glPopMatrix();
 }
 void SampleModel::drawRightHandJoint() {
@@ -475,6 +475,12 @@ void SampleModel::drawRightHand() {
 	if (VAL(TEXTURESKIN))
 		drawTextureCylinder(0.4, 0.10, 0.05);
 	else drawCylinder(0.4, 0.10, 0.05);
+
+	glPushMatrix();
+	glTranslated(0.0, 0.0, 0.8);
+	spawnParticles(cameraMatrix);
+	glPopMatrix();
+
 	glPopMatrix();
 }
 void SampleModel::drawLeftHandJoint() {
