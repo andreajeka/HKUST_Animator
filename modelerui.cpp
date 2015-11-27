@@ -28,6 +28,18 @@
 
 using namespace std;
 
+float cat = 0.5;
+
+inline void ModelerUI::cb_cat_i(Fl_Slider*, void*)
+{
+	cat = m_psldrTension->value();
+}
+
+void ModelerUI::cb_cat(Fl_Slider* o, void* v)
+{
+	((ModelerUI*)(o->user_data()))->cb_cat_i(o, v);
+}
+
 inline void ModelerUI::cb_openAniScript_i(Fl_Menu_*, void*)
 {
 	char *szFileName = fl_file_chooser("Open Animation Script", "*.ani", NULL);
@@ -908,6 +920,7 @@ m_bSaveMovie(false)
 	m_pbtLoop->callback((Fl_Callback*)cb_loop);
 	m_pbtSimulate->callback((Fl_Callback*)cb_simulate);
 	m_psldrFPS->callback((Fl_Callback*)cb_fps);
+	m_psldrTension->callback((Fl_Callback*)cb_cat);
 
 	m_pwndMainWnd->callback((Fl_Callback*)cb_hide);
 	m_pwndMainWnd->when(FL_HIDE);

@@ -2,9 +2,8 @@
 #include "point.h"
 #include "vec.h"
 #include "mat.h"
-#include <algorithm>
+#include "modelerui.h"
 
-double cat = 0.5;
 const Mat4d M(1, 0, 0, 0, -3, 3, 0, 0, 3, -6, 3, 0, -1, 3, -3, 1);
 struct myclass {
 	bool operator() (Point pt1, Point pt2) { return (pt1.x < pt2.x); }

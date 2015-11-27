@@ -176,6 +176,17 @@ ModelerUIWindows::ModelerUIWindows() {
             o->align(FL_ALIGN_LEFT);
             Fl_Group::current()->resizable(o);
           }
+		  { Fl_Value_Slider* o = m_psldrTension = new Fl_Value_Slider(470, 550, 100, 20, "Tension");
+			o->type(5);
+			o->labelsize(12);
+			o->minimum(0);
+			o->maximum(1.5);
+			o->step(0.5);
+			o->value(0.5);
+			o->user_data((void*)(this));
+			o->align(FL_ALIGN_LEFT);
+			Fl_Group::current()->resizable(o);
+		  }
           { Fl_Box* o = new Fl_Box(165, 555, 135, 20, "Playback Controls");
             o->labelsize(12);
             o->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE);

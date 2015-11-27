@@ -14,6 +14,8 @@
 #include "particleSystem.h"
 #include "modeleruiwindows.h"
 
+extern float cat;
+
 class ModelerUI : public ModelerUIWindows
 {
 public:
@@ -64,6 +66,8 @@ private:
 	std::string m_strMovieFileName;
 	int m_iMovieFrameNum;
 
+	inline void cb_cat_i(Fl_Slider*, void*);
+	static void cb_cat(Fl_Slider*, void*);
 	inline void cb_openAniScript_i(Fl_Menu_*, void*);
 	static void cb_openAniScript(Fl_Menu_*, void*);
 	inline void cb_saveAniScript_i(Fl_Menu_*, void*);
