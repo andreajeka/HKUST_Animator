@@ -132,6 +132,8 @@ void ParticleSystem::computeForcesAndUpdateParticles(float t)
 		iterator++;
 	}
 
+
+
 	//Bake the particles
 	bakeParticles(t);
 
@@ -219,6 +221,7 @@ void ParticleSystem::rungeKuttaMethod(Particle& p, std::vector<Force>& force, fl
 	Vec3f a1(0.0, 0.0, 0.0);
 	for (forceIterator = force.begin(); forceIterator != force.end(); forceIterator++) {
 		a1 += forceIterator->getAcceleration(p);
+		a1 += forceIterator->getFeaturedForce();
 	}
 
 	Vec3f x2 = x1 + 0.5 * v1 * dt;
@@ -227,6 +230,7 @@ void ParticleSystem::rungeKuttaMethod(Particle& p, std::vector<Force>& force, fl
 	p.position = x2; p.velocity = v2;
 	for (forceIterator = force.begin(); forceIterator != force.end(); forceIterator++) {
 		a2 += forceIterator->getAcceleration(p);
+		a2 += forceIterator->getFeaturedForce();
 	}
 
 	Vec3f x3 = x2 + 0.5 * v2 * dt;
@@ -235,6 +239,7 @@ void ParticleSystem::rungeKuttaMethod(Particle& p, std::vector<Force>& force, fl
 	p.position = x3; p.velocity = v3;
 	for (forceIterator = force.begin(); forceIterator != force.end(); forceIterator++) {
 		a3 += forceIterator->getAcceleration(p);
+		a3 += forceIterator->getFeaturedForce();
 	}
 
 	Vec3f x4 = x3 + v3 * dt;
@@ -243,6 +248,7 @@ void ParticleSystem::rungeKuttaMethod(Particle& p, std::vector<Force>& force, fl
 	p.position = x4; p.velocity = v4;
 	for (forceIterator = force.begin(); forceIterator != force.end(); forceIterator++) {
 		a4 += forceIterator->getAcceleration(p);
+		a4 += forceIterator->getFeaturedForce();
 	}
 
 	Vec3f xf = x1 + (dt / 6)*(v1 + 2 * v2 + 2 * v3 + v4);

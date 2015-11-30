@@ -14,5 +14,6 @@ public:
 	Vec3f f;
 
 	virtual Vec3f getAcceleration(const Particle& p) const;
+	virtual Vec3f getFeaturedForce() const;
 };
 #endif
