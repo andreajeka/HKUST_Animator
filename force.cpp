@@ -6,6 +6,6 @@ Vec3f Force::getAcceleration(const Particle& p) const{
 }
 
 Vec3f Force::getFeaturedForce() const{
-	Vec3f something(50, 50, 50);
+	Vec3f something(0, 0, 50);
 	return something;
 }
